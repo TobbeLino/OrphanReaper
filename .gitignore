@@ -1,0 +1,8 @@
+# Runtime state files
+OrphanReaper/pid.txt
+OrphanReaper/reaper.log
+OrphanReaper/stop.flag
+
+# Windows shortcuts (optional - include if you want to track them)
+*.lnk
+
