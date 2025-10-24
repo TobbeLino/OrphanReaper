@@ -1,6 +1,7 @@
 # OrphanReaper
 
-A PowerShell script to automatically detect and kill orphaned processes on Windows, with special handling for suspended processes.
+A PowerShell script to automatically detect and kill orphaned git-bash processes on Windows, with special handling for suspended processes.
+Mainly created to remove hanging, orphaned bash.exe processes (and child-processes) left by Cursor IDE when using git-bash
 
 ## Features
 
