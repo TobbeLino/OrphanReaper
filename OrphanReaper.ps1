@@ -13,8 +13,8 @@ param(
 	[double]$SuspendedGraceMinutes = 60.0,	# grace period for suspended processes
 	[switch]$List,
 	[switch]$DryRun,
-	[double]$CheckOnInterval = 0,	 # 0 = run once then exit
-	[switch]$Tray,									# launch tray UI controller
+	[double]$CheckOnInterval = 0,	 		# 0 = run once then exit
+	[switch]$Tray,							# launch tray UI controller
 	[switch]$PauseWhenDone					# optional: force pause at the end in one-shot mode
 )
 
@@ -259,9 +259,10 @@ function Invoke-ReapCycle {
 		}
 	}
 	if (-not $DryRun) {
-		Write-Host ("[{0}] Done. Killed {1} orphan(s)." -f (Get-Timestamp), $killed)
+		Write-Host ("[{0}] Done. Killed {1} orphan(s)" -f (Get-Timestamp), $killed)
+		Write-Log ("[INFO] Reaping done. Killed {1} orphan(s)" -f (Get-Timestamp), $killed)
 	} else {
-		Write-Host ("[{0}] Dry run complete." -f (Get-Timestamp))
+		Write-Host ("[{0}] Dry run complete" -f (Get-Timestamp))
 	}
 }
 
@@ -306,7 +307,7 @@ function Run-WatcherLoop {
 				break
 			}
 
-			Write-Log "[INFO] Starting reap cycle"
+			# Write-Log "[INFO] Starting reap cycle"
 			Invoke-ReapCycle -Names $Names -FolderPaths $FolderPaths -GraceMinutes $GraceMinutes -SampleSeconds $SampleSeconds `
 											 -CpuThresholdPercent $CpuThresholdPercent -WhitelistCmdRegex $WhitelistCmdRegex `
 											 -KillSuspended:$KillSuspended -SuspendedGraceMinutes $SuspendedGraceMinutes `
@@ -314,7 +315,7 @@ function Run-WatcherLoop {
 
 			# Sleep, but wake instantly if tray dies (mutex is abandoned) or stop is requested
 			$waitSeconds = [int]([math]::Max(1, $CheckOnInterval * 60))
-			Write-Log ("[INFO] Sleeping {0} minute(s)..." -f [math]::Round($CheckOnInterval,2))
+			# Write-Log ("[INFO] Sleeping {0} minute(s)..." -f [math]::Round($CheckOnInterval,2))
 			Write-Host ("[{0}] Sleeping {1} minute(s)..." -f (Get-Timestamp), [math]::Round($CheckOnInterval,2))
 
 			$handles = [System.Threading.WaitHandle[]]@($stopEvt, $trayMutex)
@@ -331,13 +332,13 @@ function Run-WatcherLoop {
 				break
 			} else {
 				# timeout -> loop continues
-				Write-Log "[INFO] Sleep complete, continuing"
+				# Write-Log "[INFO] Sleep complete, continuing"
 			}
 		}
 	} catch {
-	$err=$_.Exception.Message
-	Write-Log "[ERROR] Watcher loop exception: $err"
-	Write-Host "[ERROR] $err"
+		$err=$_.Exception.Message
+		Write-Log "[ERROR] Watcher loop exception: $err"
+		Write-Host "[ERROR] $err"
 	} finally {
 		Remove-Item $PidFile -ErrorAction SilentlyContinue
 		if ($stopEvt)	 { $stopEvt.Dispose() }
