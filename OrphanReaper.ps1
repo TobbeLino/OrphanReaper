@@ -260,7 +260,7 @@ function Invoke-ReapCycle {
 	}
 	if (-not $DryRun) {
 		Write-Host ("[{0}] Done. Killed {1} orphan(s)" -f (Get-Timestamp), $killed)
-		Write-Log ("[INFO] Reaping done. Killed {1} orphan(s)" -f (Get-Timestamp), $killed)
+		# Write-Log ("[INFO] Reaping done. Killed {1} orphan(s)" -f (Get-Timestamp), $killed)
 	} else {
 		Write-Host ("[{0}] Dry run complete" -f (Get-Timestamp))
 	}
@@ -488,7 +488,28 @@ function Run-Tray {
 			else { $psi.Arguments += $arg }
 		}
 
-		Write-Log "[INFO] Starting watcher: $exe $($psi.Arguments)"
+		# Format arguments for logging (group parameter + value pairs on separate lines)
+		$logArgs = @()
+		$skip = $false
+		for ($i = 0; $i -lt $procArgs.Count; $i++) {
+			if ($skip) { $skip = $false; continue }
+			$arg = $procArgs[$i]
+			if ($arg -match '^-') {
+				# This is a parameter
+				if ($i + 1 -lt $procArgs.Count -and $procArgs[$i + 1] -notmatch '^-') {
+					# Next item is the value
+					$logArgs += "$arg $($procArgs[$i + 1])"
+					$skip = $true
+				} else {
+					# Switch parameter (no value)
+					$logArgs += $arg
+				}
+			}
+		}
+		Write-Log "[INFO] Starting watcher with arguments:"
+		foreach ($logArg in $logArgs) {
+			Write-Log "[INFO]   $logArg"
+		}
 
 		try {
 			$proc = [Diagnostics.Process]::Start($psi)
